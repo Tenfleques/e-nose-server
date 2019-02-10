@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_enose.server" default="compile.module.enose.server">
+  <dirname property="module.enose.server.basedir" file="${ant.file.module_enose.server}"/>
+  
+  <property name="module.jdk.home.enose.server" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.enose.server" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.enose.server" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.enose.server" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="enose.server.output.dir" value="${module.enose.server.basedir}/target/classes"/>
+  <property name="enose.server.testoutput.dir" value="${module.enose.server.basedir}/target/test-classes"/>
+  
+  <path id="enose.server.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="enose.server.module.production.classpath">
+    <path refid="${module.jdk.classpath.enose.server}"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-streams:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-clients:1.0.1.classpath"/>
+    <path refid="library.maven:_org.lz4:lz4-java:1.4.classpath"/>
+    <path refid="library.maven:_org.xerial.snappy:snappy-java:1.1.4.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-json:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-api:1.0.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.rocksdb:rocksdbjni:5.7.3.classpath"/>
+    <path refid="library.maven:_com.googlecode.json-simple:json-simple:1.1.classpath"/>
+    <path refid="library.maven:_javax.ws.rs:javax.ws.rs-api:2.0.1.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet-core:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:javax.inject:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-common:2.19.classpath"/>
+    <path refid="library.maven:_javax.annotation:javax.annotation-api:1.2.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.bundles.repackaged:jersey-guava:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-api:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-utils:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-locator:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.javassist:javassist:3.18.1-ga.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:osgi-resource-locator:1.0.1.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-server:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-client:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.media:jersey-media-jaxb:2.19.classpath"/>
+    <path refid="library.maven:_javax.validation:validation-api:1.1.0.final.classpath"/>
+    <path refid="library.maven:_biz.paluch.redis:lettuce:3.2.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-common:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-transport:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-buffer:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-handler:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-codec:4.0.28.final.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:17.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-pool2:2.2.classpath"/>
+  </path>
+  
+  <path id="enose.server.runtime.production.module.classpath">
+    <pathelement location="${enose.server.output.dir}"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-streams:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-clients:1.0.1.classpath"/>
+    <path refid="library.maven:_org.lz4:lz4-java:1.4.classpath"/>
+    <path refid="library.maven:_org.xerial.snappy:snappy-java:1.1.4.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-json:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-api:1.0.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.rocksdb:rocksdbjni:5.7.3.classpath"/>
+    <path refid="library.maven:_com.googlecode.json-simple:json-simple:1.1.classpath"/>
+    <path refid="library.maven:_javax.ws.rs:javax.ws.rs-api:2.0.1.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet-core:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:javax.inject:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-common:2.19.classpath"/>
+    <path refid="library.maven:_javax.annotation:javax.annotation-api:1.2.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.bundles.repackaged:jersey-guava:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-api:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-utils:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-locator:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.javassist:javassist:3.18.1-ga.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:osgi-resource-locator:1.0.1.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-server:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-client:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.media:jersey-media-jaxb:2.19.classpath"/>
+    <path refid="library.maven:_javax.validation:validation-api:1.1.0.final.classpath"/>
+    <path refid="library.maven:_biz.paluch.redis:lettuce:3.2.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-common:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-transport:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-buffer:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-handler:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-codec:4.0.28.final.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:17.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-pool2:2.2.classpath"/>
+  </path>
+  
+  <path id="enose.server.module.classpath">
+    <path refid="${module.jdk.classpath.enose.server}"/>
+    <pathelement location="${enose.server.output.dir}"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-streams:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-clients:1.0.1.classpath"/>
+    <path refid="library.maven:_org.lz4:lz4-java:1.4.classpath"/>
+    <path refid="library.maven:_org.xerial.snappy:snappy-java:1.1.4.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-json:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-api:1.0.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.rocksdb:rocksdbjni:5.7.3.classpath"/>
+    <path refid="library.maven:_com.googlecode.json-simple:json-simple:1.1.classpath"/>
+    <path refid="library.maven:_javax.ws.rs:javax.ws.rs-api:2.0.1.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet-core:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:javax.inject:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-common:2.19.classpath"/>
+    <path refid="library.maven:_javax.annotation:javax.annotation-api:1.2.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.bundles.repackaged:jersey-guava:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-api:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-utils:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-locator:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.javassist:javassist:3.18.1-ga.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:osgi-resource-locator:1.0.1.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-server:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-client:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.media:jersey-media-jaxb:2.19.classpath"/>
+    <path refid="library.maven:_javax.validation:validation-api:1.1.0.final.classpath"/>
+    <path refid="library.maven:_biz.paluch.redis:lettuce:3.2.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-common:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-transport:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-buffer:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-handler:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-codec:4.0.28.final.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:17.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-pool2:2.2.classpath"/>
+  </path>
+  
+  <path id="enose.server.runtime.module.classpath">
+    <pathelement location="${enose.server.testoutput.dir}"/>
+    <pathelement location="${enose.server.output.dir}"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-streams:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:kafka-clients:1.0.1.classpath"/>
+    <path refid="library.maven:_org.lz4:lz4-java:1.4.classpath"/>
+    <path refid="library.maven:_org.xerial.snappy:snappy-java:1.1.4.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-json:1.0.1.classpath"/>
+    <path refid="library.maven:_org.apache.kafka:connect-api:1.0.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.rocksdb:rocksdbjni:5.7.3.classpath"/>
+    <path refid="library.maven:_com.googlecode.json-simple:json-simple:1.1.classpath"/>
+    <path refid="library.maven:_javax.ws.rs:javax.ws.rs-api:2.0.1.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-server:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-http:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-util:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-io:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-servlet:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.eclipse.jetty:jetty-security:9.2.12.v20150709.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet-core:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:javax.inject:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-common:2.19.classpath"/>
+    <path refid="library.maven:_javax.annotation:javax.annotation-api:1.2.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.bundles.repackaged:jersey-guava:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-api:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-utils:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:hk2-locator:2.4.0-b25.classpath"/>
+    <path refid="library.maven:_org.javassist:javassist:3.18.1-ga.classpath"/>
+    <path refid="library.maven:_org.glassfish.hk2:osgi-resource-locator:1.0.1.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-server:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.core:jersey-client:2.19.classpath"/>
+    <path refid="library.maven:_org.glassfish.jersey.media:jersey-media-jaxb:2.19.classpath"/>
+    <path refid="library.maven:_javax.validation:validation-api:1.1.0.final.classpath"/>
+    <path refid="library.maven:_biz.paluch.redis:lettuce:3.2.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-common:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-transport:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-buffer:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-handler:4.0.28.final.classpath"/>
+    <path refid="library.maven:_io.netty:netty-codec:4.0.28.final.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:17.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-pool2:2.2.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.enose.server">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.enose.server">
+    <patternset refid="excluded.from.module.enose.server"/>
+  </patternset>
+  
+  <path id="enose.server.module.sourcepath">
+    <dirset dir="${module.enose.server.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.enose.server" depends="compile.module.enose.server.production,compile.module.enose.server.tests" description="Compile module enose.server"/>
+  
+  <target name="compile.module.enose.server.production" depends="register.custom.compilers" description="Compile module enose.server; production classes">
+    <mkdir dir="${enose.server.output.dir}"/>
+    <javac2 destdir="${enose.server.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.enose.server}/javac">
+      <compilerarg line="${compiler.args.enose.server}"/>
+      <bootclasspath refid="enose.server.module.bootclasspath"/>
+      <classpath refid="enose.server.module.production.classpath"/>
+      <src refid="enose.server.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.enose.server"/>
+    </javac2>
+    
+    <copy todir="${enose.server.output.dir}">
+      <fileset dir="${module.enose.server.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="/">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.enose.server.tests" depends="register.custom.compilers,compile.module.enose.server.production" description="compile module enose.server; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.enose.server" description="cleanup module">
+    <delete dir="${enose.server.output.dir}"/>
+    <delete dir="${enose.server.testoutput.dir}"/>
+  </target>
+</project>

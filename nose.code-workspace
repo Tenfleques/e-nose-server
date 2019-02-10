@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "kafka"
+		},
+		{
+			"path": "producer"
+		},
+		{
+			"path": "consumer"
+		},
+		{
+			"path": "node-rest"
+		},
+		{
+			"path": "nose-model-generator"
+		}
+	],
+	"settings": {}
+}
