@@ -4,6 +4,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.StreamsMetadata;
 
 import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -13,14 +14,14 @@ import java.util.stream.Collectors;
  */
 public class MetadataService {
     private final KafkaStreams streams;
-    public MetadataService(final KafkaStreams st) {
+    MetadataService(final KafkaStreams st) {
         this.streams = st;
     }
     /**
      * Get the metadata for all of the instances of this Kafka Streams application
      * @return List of {@link HostStoreInfo}
      */
-    public String streamsMetadata() {
+    String streamsMetadata() {
         // Get metadata for all of the instances of this Kafka Streams application
         final Collection<StreamsMetadata> metadata = streams.allMetadata();
         return  jsonMetadata(metadata);
@@ -60,17 +61,14 @@ public class MetadataService {
 
     private String jsonMetadata(final Collection<StreamsMetadata> metadatas) {
         String json = "";
-        Integer i = 0;
-        Iterator<StreamsMetadata> hostInfos = metadatas.stream().collect(Collectors.toList()).iterator();
-        while(hostInfos.hasNext()){
-            StreamsMetadata metadata =  hostInfos.next();
-            if(i!=0)
+        int i = 0;
+        for (StreamsMetadata metadata : new ArrayList<>(metadatas)) {
+            if (i != 0)
                 json += ",";
             json += new HostStoreInfo(metadata.host(),
-                                metadata.port(),
-                                metadata.stateStoreNames()).toString();
+                    metadata.port(),
+                    metadata.stateStoreNames()).toString();
         }
-        //json += "]";
         return  json;
     }
 }

@@ -1,62 +1,55 @@
 package com.flequesboard.java.apps;
 
-import org.apache.kafka.streams.KeyValue;
-
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-//nose_id, date, flag, session_id,  sensor_1, ... ,sensor_n
-public class NoseRecord {
-    private List<String> sensors = new ArrayList<>();;
-    private String noseID = "";
-    private Long date,sessionID;
-    private Integer flag;
-    NoseRecord(String rec){
 
-        List<String> record = Arrays.asList(rec.split(","));
-        if(record.size() < 10) //malformed record
-            return;
+/*
+ *
+ * */
+class NoseRecord {
 
-        this.noseID = record.get(RecordFields.NOSE_FIELD.getValue());
-        this.sessionID = Long.parseLong(record.get(RecordFields.SESSION_FIELD.getValue()));
-        this.date = Long.parseLong(record.get(RecordFields.DATE_FIELD.getValue()));
-        this.flag = Integer.parseInt(record.get(RecordFields.FLAG.getValue()));
-        sensors = record.stream()
-                        .filter(val-> !val.equals(noseID) && !val.equals(sessionID.toString()) && !val.equals(date.toString())
-                                && !val
-                                .equals(flag.toString()))
-                        .collect(Collectors.toList());
+    private Map<String, String> sensors;;
+    private String noseID;
+    private String sessionID;
+    private String date;
+
+    NoseRecord(String rec, String noseID){
+        List<String> ss = Arrays.asList(rec.split(","));
+
+        this.noseID = noseID;
+
+        int startOfDate = ss.indexOf("date");
+        int startOfSession = ss.indexOf("session");
+        int startOfSensors = ss.indexOf("sensors");
+
+        this.date = ss.get(startOfDate + 1);
+        this.sessionID = ss.get(startOfSession+1);
+
+
+        sensors = timeSensorRecord(ss.subList(startOfSensors + 1,ss.size()));
+        //System.out.println(ss.subList(startOfSensors + 1,ss.size()));
     }
-    NoseRecord(String noseId, String sessionId){
-        this.noseID = noseId;
-        this.sessionID = Long.parseLong(sessionId);
-        this.date = sessionID;
+    private Map<String, String> timeSensorRecord(List<String> sensors){
+        Map<String, String> timeSensorPair = new HashMap<>();
+        for(int i = 1; i < sensors.size(); i += 2) {
+            timeSensorPair.put(this.date + "__sep__" +sensors.get(i - 1), sensors.get(i));
+        }
+        return timeSensorPair;
     }
-    public String getKey(){
-        return this.noseID + "_session_" + this.sessionID;
-    }
-    public KeyValue<String,String> getRecord() {
-        return KeyValue.pair(this.getKey(),this.date + "," + this.flag + ", " + this.sensors.toString());
-    }
-    KeyValue<String,String> getSessionRecord(){
-        return KeyValue.pair(this.noseID,this.date + "," + this.sessionID + ", "  + this.flag + ", " + this.sensors
-                .toString());
-    }
+
     String getNoseID() {
         return noseID;
     }
 
-    public Long getDate() {
-        return date;
-    }
-
-    Long getSessionID() {
+    String getSessionID() {
         return sessionID;
     }
 
-    public List<String> getSensors() {
-        return sensors;
+    Map<String, String> getRedisReadyRecord(){
+        return  this.sensors;
     }
+
 }

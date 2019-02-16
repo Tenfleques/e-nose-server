@@ -1,8 +1,9 @@
 {
   "brokers" : ["localhost:9092"],
-  "topic" : "nose-input-x",
+  "topic" : "nose-id_test_",
   "restUrl" : "localhost",
   "restPort" : "7070",
   "redisUrl" : "localhost",
-  "redisPort" : "6379"
+  "redisPort" : "6379",
+  "redisPass" : "password"
 }

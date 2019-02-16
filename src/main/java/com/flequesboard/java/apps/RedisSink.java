@@ -3,16 +3,13 @@ package com.flequesboard.java.apps;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.RedisURI;
-import org.apache.kafka.streams.KeyValue;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 
 
-public class RedisSink {
-    RedisClient redisClient;
+class RedisSink {
+    private RedisClient redisClient;
     RedisSink(String redishost, int redisport){
         try {
             this.redisClient = new RedisClient(
@@ -22,53 +19,60 @@ public class RedisSink {
         }
     }
 
-    public void sinkNose(KeyValue<String,String> noseRecord){
+
+    void sinkNose(String noseID){
         RedisConnection<String, String> connection = redisClient.connect();
-        connection.sadd(noseRecord.key,noseRecord.value);
+
+        //save the reg_noses => [noseID ]
+        connection.sadd(AdministrativeStores.ENOSE_IDS.getValue(), noseID);
+
         connection.close();
     }
-    public void sinkSession(KeyValue<String,String> noseSessionRecord){
+
+    void sinkNoseRecord(NoseRecord noseRecord){
+        Map<String, String> redisNoseRecords = noseRecord.getRedisReadyRecord();
         RedisConnection<String, String> connection = redisClient.connect();
-        connection.sadd(noseSessionRecord.key,noseSessionRecord.value);
+
+        //save the nose-id => [session ]
+        connection.sadd(AdministrativeStores.ENOSE_SESIONS.getValue() + noseRecord.getNoseID(), noseRecord.getSessionID());
+
+
+        //save the nose + session  => [sensor -> val + date -> date]
+        String sessionID = getSessionKey(noseRecord.getNoseID(),  noseRecord.getSessionID());
+
+        connection.hmset(sessionID, redisNoseRecords);
+
         connection.close();
     }
-    public void sinkKey(String key){
-        RedisConnection<String, String> connection = redisClient.connect();
-        connection.sadd(AdministrativeStores.ENOSE_IDS.getValue(),key);
-        connection.close();
+    private String  getSessionKey(String noseID, String sessionID){
+        return  AdministrativeStores.SESSION_RECORDS.getValue() +  noseID + sessionID;
     }
-    public void sinkSessionKeys(String noseID, String session){
-        RedisConnection<String, String> connection = redisClient.connect();
-        connection.sadd(AdministrativeStores.ENOSE_SESIONS.getValue() + noseID,session);
-        connection.close();
-    }
-    public String getNoseKeys(){
+
+    String getNoseKeys(){
         RedisConnection<String, String> connection = redisClient.connect();
         Set<String> set = connection.smembers(AdministrativeStores.ENOSE_IDS.getValue());
         connection.close();
         return new StreamJSON(set, 1).getJson();
     }
-    public  String getSessionsForNose(String noseId){
+    String getSessionsForNose(String noseID){
         RedisConnection<String, String> connection = redisClient.connect();
-        Set<String> set = connection.smembers(AdministrativeStores.ENOSE_SESIONS.getValue() + noseId);
+        Set<String> set = connection.smembers(AdministrativeStores.ENOSE_SESIONS.getValue() + noseID);
+
         connection.close();
         return new StreamJSON(set,1).getJson();
     }
-    public String getAllRecordsForNoseID(String noseID){
+    String getSessionRecordsForNoseSession(String noseID, String sessionID){
         RedisConnection<String, String> connection = redisClient.connect();
-        Set<String> set = connection.smembers(noseID);
+
+        String session = getSessionKey(noseID, sessionID);
+
+        Map<String, String> set = connection.hgetall(session);
+
         connection.close();
         return new StreamJSON(set).getJson();
     }
 
-    public String getSessionRecordsForNoseKey(String noseIdAndSession){
-        RedisConnection<String, String> connection = redisClient.connect();
-        Set<String> set = connection.smembers(noseIdAndSession);
-        connection.close();
-        return new StreamJSON(set).getJson();
-    }
-
-    public void close(){
+    void close(){
         redisClient.shutdown();
     }
 }

@@ -6,116 +6,74 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 /**
- *  Rest endpoint to broadcast the computed statistics in the application
+ *  Rest endpoint
  *  available endpoints :
- *      url:port/stats/{storeName}/all
- *      url:port/instances
+ *       url:port/instances
+ * 	     url:port/noses
+ * 	     url:port/sessions/{nose_id}
+ * 	     url:port/session/{nose_id}/{session_id}
  *
  */
 @Path("/")
 public class RPCService {
-    private final KafkaStreams streams;
     private final MetadataService metadataService;
     private Server jettyServer;
     private final RedisSink redisSink;
-    private List<String> archiveStores;
 
     RPCService(final KafkaStreams streams, final RedisSink redisSink) {
-        this.streams = streams;
+        KafkaStreams streams1 = streams;
         this.metadataService = new MetadataService(streams);
         this.redisSink = redisSink;
     }
-    public void setArchiveStores(List<String> archiveStores){
-        this.archiveStores = archiveStores;
-    }
-    @GET()
-    @Path("/records/stores")
+
+
+    /*TODO
+     *   let app get nose and server params from post
+     * */
+
+    @POST()
+    @Path("/params")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getArchiveStores() {
-        return new StreamJSON(this.archiveStores).getJson();
+    public String setStreamParams(@PathParam("noseId") final String noseId) {
+
+        return "[]";
     }
 
     /**
-     * Get all for a given nose ID and session
-     * @param  noseId
-     * @param session  to query
-     * @return A List representing all of the key-values for the date given
+     * send data
+     * get nose read and commit to redis
+     * @param noseID the nose identity
+     * @param sessionID the session identity to save
+     * @param details additional details associated with dump
+     * @param readings the readings array of maps
      */
-    @GET()
-    @Path("/session/{noseId}/{session}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getSessionRecordsForNose(@PathParam("noseId") final String noseId,
-                                        @PathParam("session") final String session) {
-        try {
-            return redisSink.getSessionRecordsForNoseKey(new NoseRecord(noseId,session).getKey());
-        }catch (Exception e){
-            return "[]";
-        }
-    }
-    /**
-     * Get all sessions saved for a given nose ID
-     * @param  noseId
-     * @return A List representing all of the key-values for the date given
-     */
-    @GET()
-    @Path("/sessions/{noseId}/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getSessionsForNose(@PathParam("noseId") final String noseId) {
-        try {
-            return redisSink.getSessionsForNose(noseId);
-        }catch (Exception e){
-            e.printStackTrace();
-            return e.getMessage();
-        }
-    }
-    /**
-     * Get all for a given nose ID
-     * @param  noseId
-     * @return A List representing all of the key-values for the noseId given
-     */
-    @GET()
-    @Path("/records/{noseId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getRecordsForNose(@PathParam("noseId") final String noseId) {
-        try {
-            return redisSink.getAllRecordsForNoseID(noseId);
-        }catch (Exception e){
-
-
-            System.out.println(e.getMessage());
-            return "[]";
-        }
-    }
-
-
-    /**
-     * send test data
-     * get nose read and commit to kafka and redis
-     * @param noseId
-     * @param sessionID
-     * @param timestamp
-     * @param flag
-     * @param nose
-     */
-    @GET()
+    @POST()
     @Path("/write")
     @Produces(MediaType.APPLICATION_JSON)
-    public String setRecordsForNose(@PathParam("noseId") final String noseId) {
-        try {
-            return redisSink.getAllRecordsForNoseID(noseId);
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            return "[]";
-        }
+    public String setRecordsForNose(
+            @PathParam("noseID") final String noseID,
+            @PathParam("sessionID") final String sessionID,
+            @PathParam("details") final String details,
+            @PathParam("readings") final String readings) {
+
+        return "[]";
     }
+
+
+    @GET()
+    @Path("/instances")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String streamsMetadata() {
+        return metadataService.streamsMetadata();
+    }
+
+    /*
+    * get the noses feeding this redis deployment
+    * */
 
     @GET()
     @Path("/noses")
@@ -124,17 +82,62 @@ public class RPCService {
         return redisSink.getNoseKeys();
     }
 
+
+
+    /**
+     * Get all sessions saved for a given nose ID
+     * @param  noseID the nose identity
+     * @return A List representing all of the key-values for the date given
+     */
     @GET()
-    @Path("/instances")
+    @Path("/sessions/{noseID}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public String streamsMetadata() {
-        return metadataService.streamsMetadata().toString();
+    public String getSessionsForNose(@PathParam("noseID") final String noseID) {
+        try {
+            return redisSink.getSessionsForNose(noseID);
+        }catch (Exception e){
+            e.printStackTrace();
+            return e.getMessage();
+        }
     }
+    /**
+     * Get models saved for noses
+     * @return A List representing saved ML models relative to the model.
+     */
+    @GET()
+    @Path("/models")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getModels() {
+        try {
+            return "[]";
+        }catch (Exception e){
+            return "[]";
+        }
+    }
+
+    /**
+     * Get all for a given nose ID and session
+     * @param  noseID the nose identity
+     * @param session  to query
+     * @return A List representing all of the key-values for the nose and session given
+     */
+    @GET()
+    @Path("/session/{noseID}/{session}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getSessionRecordsForNose(@PathParam("noseID") final String noseID,
+                                           @PathParam("session") final String session) {
+        try {
+            return redisSink.getSessionRecordsForNoseSession(noseID,session);
+        }catch (Exception e){
+            return "[]";
+        }
+    }
+
 
     /**
      * Start an embedded Jetty Server on the given port
      * @param port    port to run the Server on
-     * @throws Exception
+     * @throws Exception exceptions include TO_LIST
      */
     void start(final int port) throws Exception {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);

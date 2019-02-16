@@ -14,38 +14,26 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 /*
-* All the methods and fields are private save for the constructor so that all statistic calls are controlled and
-* fixed to one for each instance of the class
-*/
-
-//nose_id,date,session_id,sensor_1,...,sensor_n
-//stream and sink as:
-/*
-*nose_id:
-*    -------(session_1:
-*             -----------(date, sensor_1, sensor_2, ... , sensor_n)
-*             )
-*             .
-*             .
-*             .
-*    -------(session_n:
-*             -----------(date, sensor_1, sensor_2, ... , sensor_n)
-*             )
-*/
+*
+* */
 
 class StreamKafka {
 
     private RedisSink redisSink;
     private final KafkaStreams streams;
+    private final String topic;
 
     StreamKafka(String brokers, String topic, String rpcEndpoint, Integer
             rpcPort, String redishost, int redisport) throws Exception {
+        this.topic = topic;
 
         final Properties props;
         props  = new Properties();
         StreamsBuilder builder = new StreamsBuilder();
         this.redisSink = new RedisSink(redishost, redisport);
 
+        //sink the noseID
+        redisSink.sinkNose(topic);
 
         final String APP_ID = "stream-nose-records";
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, APP_ID);
@@ -59,23 +47,27 @@ class StreamKafka {
 
 
         KStream<String, String> source = builder.stream(topic);
-        //sink records to redis by noseID key
-        sinkRecords(source);
+
+        //sink records to of this nose's session
+        KStream<String,NoseRecord> noseRecords =  source.mapValues(a -> {
+                                                    NoseRecord noseRecord = new NoseRecord(a,this.topic);
+                                                    redisSink.sinkNoseRecord(noseRecord);
+                                                    return  noseRecord;
+                                                });
+        //can use th nose records as wished here. e.g feed an AI
         //expose the available REST endpoints
         StringBuilder info = new StringBuilder("\n" +
                 "*available endpoints :\n");
 
-        //info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/archive/stores\n");
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/instances\n");
+        //info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/instances\n");
+
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/noses\n");
-        /*info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/live/"+sinkRecordsStore+"\n");*/
+
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/session/nose_id/session_id\n");
+                ("/sessions/{nose_id}\n");
+
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/records/nose_id\n");
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/sessions/nose_id\n");
+                ("/session/{nose_id}/{session_id}\n");
 
         final Topology topology = builder.build();
         streams = new KafkaStreams(topology, props);
@@ -85,7 +77,7 @@ class StreamKafka {
 
         streams.start();
         final RPCService restService =  startRestProxy(streams,redisSink,rpcPort);
-        //restService.setArchiveStores(historicalStores);
+
         final CountDownLatch latch = new CountDownLatch(1);
         try{
             latch.await();
@@ -106,19 +98,6 @@ class StreamKafka {
             }
         });
         System.exit(0);
-
-    }
-    private void sinkRecords(KStream<String, String> source){
-        //final String store = new java.sql.Date(Instant.now().toEpochMilli()).toString();
-
-        source.mapValues(NoseRecord::new)
-              .map((key,noseRecord)-> {
-                  redisSink.sinkSession(noseRecord.getSessionRecord());
-                  redisSink.sinkNose(noseRecord.getRecord());
-                  redisSink.sinkKey(noseRecord.getNoseID());
-                  redisSink.sinkSessionKeys(noseRecord.getNoseID(), noseRecord.getSessionID().toString());
-                  return noseRecord.getRecord();
-              });
 
     }
     private static RPCService startRestProxy(final KafkaStreams streams, final RedisSink redisSink, final int port)

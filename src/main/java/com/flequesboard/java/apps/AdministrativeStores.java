@@ -2,8 +2,10 @@ package com.flequesboard.java.apps;
 
 enum AdministrativeStores {
     LIVE_DATES("LIVEDATES"),
-    ENOSE_IDS("enose-IDS"),
-    ENOSE_SESIONS("enose-sessions-");
+    ENOSE_IDS("enose_IDS"),
+    ENOSE_SESIONS("enose_sessions_"),
+    KEY_SEP("__sep__"),
+    SESSION_RECORDS("enose_session_records_");
     String value;
     AdministrativeStores(String value){
         this.value = value;
