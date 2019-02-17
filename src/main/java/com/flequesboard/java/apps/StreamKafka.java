@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 /*
-*
+* streams kafka records of a given nose id, commit well structured form into redis.
 * */
 
 class StreamKafka {
@@ -62,12 +62,19 @@ class StreamKafka {
         //info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/instances\n");
 
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/noses\n");
+        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/csv/noses\n");
 
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
                 ("/sessions/{nose_id}\n");
+        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
+                ("/csv/sessions/{nose_id}\n");
+
+
 
         info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
                 ("/session/{nose_id}/{session_id}\n");
+        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
+                ("/csv/session/{nose_id}/{session_id}\n");
 
         final Topology topology = builder.build();
         streams = new KafkaStreams(topology, props);

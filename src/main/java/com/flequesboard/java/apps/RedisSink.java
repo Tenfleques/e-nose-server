@@ -48,20 +48,29 @@ class RedisSink {
         return  AdministrativeStores.SESSION_RECORDS.getValue() +  noseID + sessionID;
     }
 
-    String getNoseKeys(){
+    String getNoseKeys(boolean csv){
         RedisConnection<String, String> connection = redisClient.connect();
         Set<String> set = connection.smembers(AdministrativeStores.ENOSE_IDS.getValue());
         connection.close();
-        return new StreamJSON(set, 1).getJson();
+
+        if (csv)
+            return "noseID\n" + new StreamCSV(set).getCSV();
+
+        return new StreamJSON(set).getJson();
     }
-    String getSessionsForNose(String noseID){
+
+
+    String getSessionsForNose(String noseID, boolean csv){
         RedisConnection<String, String> connection = redisClient.connect();
         Set<String> set = connection.smembers(AdministrativeStores.ENOSE_SESIONS.getValue() + noseID);
 
         connection.close();
-        return new StreamJSON(set,1).getJson();
+        if (csv)
+            return "sessionID\n" + new StreamCSV(set).getCSV();
+
+        return new StreamJSON(set).getJson();
     }
-    String getSessionRecordsForNoseSession(String noseID, String sessionID){
+    String getSessionRecordsForNoseSession(String noseID, String sessionID, boolean csv){
         RedisConnection<String, String> connection = redisClient.connect();
 
         String session = getSessionKey(noseID, sessionID);
@@ -69,6 +78,10 @@ class RedisSink {
         Map<String, String> set = connection.hgetall(session);
 
         connection.close();
+
+        if (csv)
+            return new StreamCSV(set).getCSV();
+
         return new StreamJSON(set).getJson();
     }
 

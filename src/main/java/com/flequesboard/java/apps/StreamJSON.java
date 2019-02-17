@@ -1,12 +1,13 @@
 package com.flequesboard.java.apps;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 class StreamJSON {
     private StringBuilder json =  new StringBuilder();
 
-    StreamJSON(Set<String> set, int flat){
+    StreamJSON(Set<String> set){
         json.append( "[");
         int i = 0;
         for (String record : set){
@@ -17,17 +18,7 @@ class StreamJSON {
         }
         json.append( "]");
     }
-    StreamJSON(List<String> ls){
-        json.append( "[");
-        int i = 0;
-        for (String record : ls){
-            if(i!=0)
-                json.append( ",");
-            json.append("\"").append(record).append("\"");
-            i++;
-        }
-        json.append( "]");
-    }
+
     StreamJSON(Map<String,String> hashMap){
         Map<String,List<String>> dateToSensors = new HashMap<>();
 
@@ -46,7 +37,9 @@ class StreamJSON {
         json.append("[").append(dateToSensors.entrySet().stream()
                 .map(e -> {
                     StringBuilder sensors = new StringBuilder();
-                    sensors.append("{\"date\":")
+                    sensors.append("{\"date\":\"")
+                            .append(Instant.ofEpochMilli(Long.parseLong(e.getKey())))
+                            .append("\", \"timestamp\": ")
                             .append(e.getKey());
 
                     for(String s : e.getValue()){

@@ -79,7 +79,7 @@ public class RPCService {
     @Path("/noses")
     @Produces(MediaType.APPLICATION_JSON)
     public String getAllNoses() {
-        return redisSink.getNoseKeys();
+        return redisSink.getNoseKeys(false);
     }
 
 
@@ -94,7 +94,7 @@ public class RPCService {
     @Produces(MediaType.APPLICATION_JSON)
     public String getSessionsForNose(@PathParam("noseID") final String noseID) {
         try {
-            return redisSink.getSessionsForNose(noseID);
+            return redisSink.getSessionsForNose(noseID, false);
         }catch (Exception e){
             e.printStackTrace();
             return e.getMessage();
@@ -127,7 +127,74 @@ public class RPCService {
     public String getSessionRecordsForNose(@PathParam("noseID") final String noseID,
                                            @PathParam("session") final String session) {
         try {
-            return redisSink.getSessionRecordsForNoseSession(noseID,session);
+            return redisSink.getSessionRecordsForNoseSession(noseID,session, false);
+        }catch (Exception e){
+            return "[]";
+        }
+    }
+
+
+    /*
+     * ######################################################################################
+     *                      FOR CSV DATA                                                    *
+     * ######################################################################################
+     * */
+    /*
+     * get the noses feeding this redis deployment
+     * */
+
+    @GET()
+    @Path("/csv/noses")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getAllNosesCSV() {
+        return redisSink.getNoseKeys(true);
+    }
+
+
+    /**
+     * Get all sessions saved for a given nose ID
+     * @param  noseID the nose identity
+     * @return A List representing all of the key-values for the date given
+     */
+    @GET()
+    @Path("/csv/sessions/{noseID}/")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getSessionsForNoseCSV(@PathParam("noseID") final String noseID) {
+        try {
+            return redisSink.getSessionsForNose(noseID, true);
+        }catch (Exception e){
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
+    /**
+     * Get models saved for noses
+     * @return A List representing saved ML models relative to the model.
+     */
+    @GET()
+    @Path("/csv/models")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getModelsCSV() {
+        try {
+            return "[]";
+        }catch (Exception e){
+            return "[]";
+        }
+    }
+
+    /**
+     * Get all for a given nose ID and session
+     * @param  noseID the nose identity
+     * @param session  to query
+     * @return A List representing all of the key-values for the nose and session given
+     */
+    @GET()
+    @Path("/csv/session/{noseID}/{session}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getSessionRecordsForNoseCSV(@PathParam("noseID") final String noseID,
+                                           @PathParam("session") final String session) {
+        try {
+            return redisSink.getSessionRecordsForNoseSession(noseID,session, true);
         }catch (Exception e){
             return "[]";
         }
