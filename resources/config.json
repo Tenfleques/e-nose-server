@@ -1,6 +1,6 @@
 {
   "brokers" : ["localhost:9092"],
-  "topic" : "nose-id_test_",
+  "topic" : "ru.vsuet.noses",
   "restUrl" : "localhost",
   "restPort" : "7070",
   "redisUrl" : "localhost",

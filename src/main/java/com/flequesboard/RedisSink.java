@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
@@ -10,23 +10,21 @@ import java.util.Set;
 
 class RedisSink {
     private RedisClient redisClient;
-    RedisSink(String redishost, int redisport){
-        try {
-            this.redisClient = new RedisClient(
-                    RedisURI.create("redis://"+redishost+":"+redisport));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+
+    RedisSink(String redishost, int redisport) {
+        this.redisClient = new RedisClient(
+                RedisURI.create("redis://"+redishost+":"+redisport));
     }
 
 
-    void sinkNose(String noseID){
+    Long sinkNose(String noseID, String owner){
         RedisConnection<String, String> connection = redisClient.connect();
 
         //save the reg_noses => [noseID ]
-        connection.sadd(AdministrativeStores.ENOSE_IDS.getValue(), noseID);
+        Long insert = connection.sadd(getNoseCollectionKey(owner), noseID);
 
         connection.close();
+        return insert;
     }
 
     void sinkNoseRecord(NoseRecord noseRecord){
@@ -40,17 +38,21 @@ class RedisSink {
         //save the nose + session  => [sensor -> val + date -> date]
         String sessionID = getSessionKey(noseRecord.getNoseID(),  noseRecord.getSessionID());
 
-        connection.hmset(sessionID, redisNoseRecords);
+        String status = connection.hmset(sessionID, redisNoseRecords);
 
         connection.close();
     }
     private String  getSessionKey(String noseID, String sessionID){
         return  AdministrativeStores.SESSION_RECORDS.getValue() +  noseID + sessionID;
     }
+    private String getNoseCollectionKey(String ownerID){
 
-    String getNoseKeys(boolean csv){
+        return AdministrativeStores.ENOSE_IDS.getValue() + ownerID;
+    }
+
+    String getNoseKeys(String owner, boolean csv){
         RedisConnection<String, String> connection = redisClient.connect();
-        Set<String> set = connection.smembers(AdministrativeStores.ENOSE_IDS.getValue());
+        Set<String> set = connection.smembers(getNoseCollectionKey(owner));
         connection.close();
 
         if (csv)
@@ -84,8 +86,9 @@ class RedisSink {
 
         return new StreamJSON(set).getJson();
     }
-
     void close(){
         redisClient.shutdown();
     }
+
+
 }

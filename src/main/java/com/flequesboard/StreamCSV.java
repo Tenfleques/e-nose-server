@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -38,6 +38,9 @@ class StreamCSV {
 
             x.put(key[0], tmp);
         }
+        if(headers.isEmpty())
+            return;
+
         csv.append("date,timestamp,")
                 .append(String.join(", ", headers))
                 .append(eol);

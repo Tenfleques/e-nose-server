@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.StreamsMetadata;
@@ -6,8 +6,6 @@ import org.apache.kafka.streams.state.StreamsMetadata;
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.stream.Collectors;
 
 /**
  * Looks up StreamsMetadata from KafkaStreams and converts the results to JSON strings.

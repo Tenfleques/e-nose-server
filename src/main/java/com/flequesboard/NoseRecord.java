@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,10 +15,10 @@ class NoseRecord {
     private String sessionID;
     private String date;
 
-    NoseRecord(String rec, String noseID){
+    NoseRecord(String rec){
         List<String> ss = Arrays.asList(rec.split(","));
 
-        this.noseID = noseID;
+        this.noseID = ss.get(ss.indexOf("_id")+1);
 
         int startOfDate = ss.indexOf("date");
         int startOfSession = ss.indexOf("session");

@@ -1,5 +1,4 @@
-package com.flequesboard.java.apps;
-import org.apache.kafka.streams.KafkaStreams;
+package com.flequesboard;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -9,77 +8,37 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-/**
- *  Rest endpoint
- *  available endpoints :
- *       url:port/instances
- * 	     url:port/noses
- * 	     url:port/sessions/{nose_id}
- * 	     url:port/session/{nose_id}/{session_id}
- *
- */
 @Path("/")
 public class RPCService {
-    private final MetadataService metadataService;
+    //private MetadataService metadataService;
     private Server jettyServer;
     private final RedisSink redisSink;
+    private String organisation;
 
-    RPCService(final KafkaStreams streams, final RedisSink redisSink) {
-        KafkaStreams streams1 = streams;
-        this.metadataService = new MetadataService(streams);
+    RPCService(RedisSink redisSink, String org) {
         this.redisSink = redisSink;
+        this.organisation = org;
     }
 
-
-    /*TODO
-     *   let app get nose and server params from post
-     * */
-
-    @POST()
-    @Path("/params")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String setStreamParams(@PathParam("noseId") final String noseId) {
-
-        return "[]";
-    }
-
-    /**
-     * send data
-     * get nose read and commit to redis
-     * @param noseID the nose identity
-     * @param sessionID the session identity to save
-     * @param details additional details associated with dump
-     * @param readings the readings array of maps
-     */
-    @POST()
-    @Path("/write")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String setRecordsForNose(
-            @PathParam("noseID") final String noseID,
-            @PathParam("sessionID") final String sessionID,
-            @PathParam("details") final String details,
-            @PathParam("readings") final String readings) {
-
-        return "[]";
-    }
-
-
-    @GET()
-    @Path("/instances")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String streamsMetadata() {
-        return metadataService.streamsMetadata();
-    }
 
     /*
-    * get the noses feeding this redis deployment
+    *     #############################################################################
+    *                       JSON Consumables
+    *     #############################################################################
     * */
 
+    /**
+     * Get all noseIDs of ownerID
+     * @param  ownerID the nose identity
+     * @return A List representing all of the key-values for the date given
+     */
+
+
     @GET()
-    @Path("/noses")
+    @Path("/noses/{ownerID}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getAllNoses() {
-        return redisSink.getNoseKeys(false);
+    public String getAllNoses(@PathParam("ownerID") final String ownerID) {
+        return redisSink.getNoseKeys(ownerID, false);
     }
 
 
@@ -100,20 +59,7 @@ public class RPCService {
             return e.getMessage();
         }
     }
-    /**
-     * Get models saved for noses
-     * @return A List representing saved ML models relative to the model.
-     */
-    @GET()
-    @Path("/models")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getModels() {
-        try {
-            return "[]";
-        }catch (Exception e){
-            return "[]";
-        }
-    }
+
 
     /**
      * Get all for a given nose ID and session
@@ -136,18 +82,23 @@ public class RPCService {
 
     /*
      * ######################################################################################
-     *                      FOR CSV DATA                                                    *
+     *                      CSV Consumables                                                 *
      * ######################################################################################
      * */
     /*
      * get the noses feeding this redis deployment
      * */
 
+    /**
+     * Get all noses of ownerID
+     * @param  ownerID the nose identity
+     * @return A List representing all of the key-values for the date given
+     */
     @GET()
-    @Path("/csv/noses")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getAllNosesCSV() {
-        return redisSink.getNoseKeys(true);
+    @Path("/csv/noses/{ownerID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getAllNosesCSV(@PathParam("ownerID") final String ownerID) {
+        return redisSink.getNoseKeys(ownerID, true);
     }
 
 
@@ -161,24 +112,11 @@ public class RPCService {
     @Produces(MediaType.TEXT_PLAIN)
     public String getSessionsForNoseCSV(@PathParam("noseID") final String noseID) {
         try {
+
             return redisSink.getSessionsForNose(noseID, true);
         }catch (Exception e){
             e.printStackTrace();
             return e.getMessage();
-        }
-    }
-    /**
-     * Get models saved for noses
-     * @return A List representing saved ML models relative to the model.
-     */
-    @GET()
-    @Path("/csv/models")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getModelsCSV() {
-        try {
-            return "[]";
-        }catch (Exception e){
-            return "[]";
         }
     }
 
@@ -200,15 +138,50 @@ public class RPCService {
         }
     }
 
+    /*  #################################################################################
+     *                           Machine Learning Models                                *
+     *  #################################################################################
+     */
+    /**
+     * Get models saved for noses
+     * @return A List representing saved ML models relative to the model.
+     */
+    @GET()
+    @Path("/model/{modelID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getModels() {
+        try {
+            return "[]";
+        }catch (Exception e){
+            return "[]";
+        }
+    }
 
     /**
-     * Start an embedded Jetty Server on the given port
+     * Get models saved for noses
+     * @return A List representing saved ML models relative to the model.
+     */
+    @POST()
+    @Path("/model/{modelID}/{model}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String setModels() {
+        try {
+            return "[]";
+        }catch (Exception e){
+            return "[]";
+        }
+    }
+
+    /**
+     * Start an embedded FlequesJetty Server on the given port
      * @param port    port to run the Server on
      * @throws Exception exceptions include TO_LIST
      */
     void start(final int port) throws Exception {
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         context.setContextPath("/");
+
+        context.addServlet(new ServletHolder(new SaveNose(this.redisSink, this.organisation)), "/register/*");
 
         jettyServer = new Server(port);
         jettyServer.setHandler(context);
@@ -224,7 +197,7 @@ public class RPCService {
     }
 
     /**
-     * Stop the Jetty Server
+     * Stop the FlequesJetty Server
      * @throws Exception
      */
     void stop() throws Exception {

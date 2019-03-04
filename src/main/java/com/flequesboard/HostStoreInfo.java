@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 import java.util.Objects;
 import java.util.Set;
 /**

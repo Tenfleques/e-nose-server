@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 
 enum AdministrativeStores {
     LIVE_DATES("LIVEDATES"),

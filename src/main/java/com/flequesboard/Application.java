@@ -1,4 +1,4 @@
-package com.flequesboard.java.apps;
+package com.flequesboard;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -11,7 +11,6 @@ import java.io.IOException;
 
 public class Application {
     public static void main(String[] args) {
-
         String usage = "you must supply the config.json file with this structure"
                 +"\n{"
                 + "\n\t \"brokers\" : [\"required: the clusters address e.g localhost:9092\"],"
@@ -31,8 +30,8 @@ public class Application {
             System.out.print(filename);
         }
 
-        final Integer ENDPOINT_PORT, REDIS_PORT;
-        String BROKERS = "";
+        final int ENDPOINT_PORT, REDIS_PORT;
+        StringBuilder BROKERS = new StringBuilder();
         final String TOPIC, ENDPOINT, REDIS_URL;
 
         try {
@@ -58,11 +57,12 @@ public class Application {
             REDIS_PORT = Integer.parseInt(config.get("redisPort").toString());
 
             for (Object broker: (JSONArray)config.get("brokers") ) {
-                BROKERS += (BROKERS.length() == 0) ? "" : ",";
-                BROKERS += broker;
+                BROKERS.append((BROKERS.length() == 0) ? "" : ",");
+                BROKERS.append(broker);
             }
             try {
-                new StreamKafka(BROKERS,TOPIC,ENDPOINT,ENDPOINT_PORT,REDIS_URL,REDIS_PORT);
+                NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT,ENDPOINT_PORT,REDIS_URL,REDIS_PORT);
+
             }catch (Exception e ){
                 System.out.print(e.getMessage());
                 e.printStackTrace();
