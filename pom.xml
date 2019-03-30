@@ -19,6 +19,7 @@
         <jetty.version>9.2.12.v20150709</jetty.version>
         <jersey.version>2.19</jersey.version>
         <lettuce.version>3.2.Final</lettuce.version>
+        <mongo.version>3.10.1</mongo.version>
     </properties>
 
     <repositories>
@@ -80,6 +81,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${mongo.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
