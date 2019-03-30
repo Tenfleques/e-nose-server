@@ -1,9 +1,9 @@
 {
-  "brokers" : ["localhost:9092"],
+  "brokers" : ["kafka:9092"],
   "topic" : "ru.vsuet.noses",
   "restUrl" : "localhost",
   "restPort" : "7070",
-  "redisUrl" : "localhost",
+  "redisUrl" : "redis",
   "redisPort" : "6379",
   "redisPass" : "password"
 }
