@@ -1,4 +1,5 @@
 package com.flequesboard;
+import org.apache.kafka.streams.KafkaStreams;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -14,10 +15,12 @@ public class RPCService {
     private Server jettyServer;
     private final RedisSink redisSink;
     private String organisation;
+    KafkaStreams stream;
 
-    RPCService(RedisSink redisSink, String org) {
+    RPCService(RedisSink redisSink, String org, KafkaStreams stream) {
         this.redisSink = redisSink;
         this.organisation = org;
+        this.stream = stream;
     }
 
 
@@ -138,38 +141,21 @@ public class RPCService {
         }
     }
 
-    /*  #################################################################################
-     *                           Machine Learning Models                                *
-     *  #################################################################################
-     */
-    /**
-     * Get models saved for noses
-     * @return A List representing saved ML models relative to the model.
-     */
-    @GET()
-    @Path("/model/{modelID}")
+    /*@GET()
+    @Path("/saveRecord")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getModels() {
-        try {
-            return "[]";
-        }catch (Exception e){
-            return "[]";
-        }
-    }
+    public String saveRecord() {
+        System.out.println(this.stream.state());
+        //stream.
+        return "[]";
+    }*/
 
-    /**
-     * Get models saved for noses
-     * @return A List representing saved ML models relative to the model.
-     */
-    @POST()
-    @Path("/model/{modelID}/{model}")
+
+    @GET()
+    @Path("/getState")
     @Produces(MediaType.APPLICATION_JSON)
-    public String setModels() {
-        try {
-            return "[]";
-        }catch (Exception e){
-            return "[]";
-        }
+    public String getState() {
+        return "{\"state\" : \"" +this.stream.state()+ "\" }";
     }
 
     /**
