@@ -11,7 +11,7 @@ class NoseServer {
         streamKafka.startStream();
 
         final RPCService
-                restService = new RPCService(redisSink, topic);
+                restService = new RPCService(redisSink, topic, streamKafka.getStream());
 
         restService.start(rpcPort);
 
