@@ -20,6 +20,6 @@ public class WriteKafka {
         Producer<String, String> producer = new KafkaProducer<>(props);
         producer.send(new ProducerRecord<>(topic, key, message));
         System.out.print("send");
-        //producer.close();
+        producer.close();
     }
 }
