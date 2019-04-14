@@ -64,21 +64,25 @@ public class Application {
                 BROKERS.append(broker);
             }
             int numTries = 10, allTries = 10;
-            while (true) {
+            while (numTries > 0) {
                 try {
                     Map<String, List<PartitionInfo>> x = ReadKafka.readKafka(BROKERS.toString(), TOPIC);
-                    if(x.size() > 0 ){
-                        NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT,ENDPOINT_PORT,REDIS_URL,REDIS_PORT);
-                    }
-                    break;
+                    //if(x.size() > 0 ) {
+                    NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT, ENDPOINT_PORT, REDIS_URL, REDIS_PORT);
+                    //}
                 } catch (Exception e ) {
-                    if (--numTries == 0) {
+                    if (numTries == 0) {
                         System.out.print(e.getMessage());
-                        //throw e;
+                        try {
+                            throw e;
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
                     }else{
                         System.out.println("an error occurred, reattempting " + (allTries - numTries));
                     }
                 }
+                numTries--;
             }
 
         }catch (FileNotFoundException e){
