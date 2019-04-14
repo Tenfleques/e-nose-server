@@ -1,4 +1,5 @@
 package com.flequesboard;
+import org.apache.kafka.common.PartitionInfo;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -8,6 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class Application {
     public static void main(String[] args) {
@@ -60,12 +63,26 @@ public class Application {
                 BROKERS.append((BROKERS.length() == 0) ? "" : ",");
                 BROKERS.append(broker);
             }
-            try {
-                NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT,ENDPOINT_PORT,REDIS_URL,REDIS_PORT);
-
-            }catch (Exception e ){
-                System.out.print(e.getMessage());
-                e.printStackTrace();
+            int numTries = 10, allTries = 10;
+            while (numTries > 0) {
+                try {
+                    Map<String, List<PartitionInfo>> x = ReadKafka.readKafka(BROKERS.toString(), TOPIC);
+                    //if(x.size() > 0 ) {
+                    NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT, ENDPOINT_PORT, REDIS_URL, REDIS_PORT);
+                    //}
+                } catch (Exception e ) {
+                    if (numTries == 0) {
+                        System.out.print(e.getMessage());
+                        try {
+                            throw e;
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }else{
+                        System.out.println("an error occurred, reattempting " + (allTries - numTries));
+                    }
+                }
+                numTries--;
             }
 
         }catch (FileNotFoundException e){

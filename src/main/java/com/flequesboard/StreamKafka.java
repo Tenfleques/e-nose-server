@@ -17,9 +17,9 @@ import java.util.Properties;
 * streams kafka records of a given nose id, commit well structured form into redis.
 * */
 
-public class StreamKafka {
+class StreamKafka {
     private final KafkaStreams stream;
-    public StreamKafka(String brokers, String topic, RedisSink redisSink) throws Exception {
+    StreamKafka(String brokers, String topic, RedisSink redisSink) throws Exception {
 
         final Properties props;
         props  = new Properties();
@@ -51,11 +51,11 @@ public class StreamKafka {
         final Topology topology = builder.build();
         stream = new KafkaStreams(topology, props);
     }
-    public void startStream(){
+    void startStream(){
         this.stream.cleanUp();
         this.stream.start();
     }
-    public KafkaStreams getStream(){
+    KafkaStreams getStream(){
         return stream;
     }
 
