@@ -10,7 +10,7 @@ import java.util.Map;
  */
 class NoseRecord {
 
-    private Map<String, String> sensors;;
+    private Map<String, String> sensors;
     private String noseID;
     private String sessionID;
     private String date;

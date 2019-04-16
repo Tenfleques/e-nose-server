@@ -39,6 +39,7 @@ class RedisSink {
         String sessionID = getSessionKey(noseRecord.getNoseID(),  noseRecord.getSessionID());
 
         String status = connection.hmset(sessionID, redisNoseRecords);
+        System.out.println(status);
 
         connection.close();
     }
