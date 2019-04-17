@@ -27,7 +27,7 @@ class RedisSink {
         return insert;
     }
 
-    void sinkNoseRecord(NoseRecord noseRecord){
+    String sinkNoseRecord(NoseRecord noseRecord){
         Map<String, String> redisNoseRecords = noseRecord.getRedisReadyRecord();
         RedisConnection<String, String> connection = redisClient.connect();
 
@@ -39,9 +39,8 @@ class RedisSink {
         String sessionID = getSessionKey(noseRecord.getNoseID(),  noseRecord.getSessionID());
 
         String status = connection.hmset(sessionID, redisNoseRecords);
-        System.out.println(status);
-
         connection.close();
+        return status;
     }
     private String  getSessionKey(String noseID, String sessionID){
         return  AdministrativeStores.SESSION_RECORDS.getValue() +  noseID + sessionID;

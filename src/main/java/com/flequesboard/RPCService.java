@@ -168,6 +168,8 @@ public class RPCService {
         context.setContextPath("/");
 
         context.addServlet(new ServletHolder(new SaveNose(this.redisSink, this.organisation)), "/register/*");
+        context.addServlet(new ServletHolder(new SaveNoseRecord(this.redisSink, this.organisation)), "/nose/record/add/*");
+
 
         jettyServer = new Server(port);
         jettyServer.setHandler(context);
