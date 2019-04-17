@@ -68,9 +68,6 @@ public class Application {
                 try {
                     Map<String, List<PartitionInfo>> x = ReadKafka.readKafka(BROKERS.toString(), TOPIC);
 
-                    WriteKafka y = new WriteKafka();
-                    y.writeToKafka(BROKERS.toString(), "topic-1", "val", "hello");
-
                     //if(x.size() > 0 ) {
                     NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT, ENDPOINT_PORT, REDIS_URL, REDIS_PORT);
                     //}
