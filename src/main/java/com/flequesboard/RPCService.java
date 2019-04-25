@@ -141,15 +141,6 @@ public class RPCService {
         }
     }
 
-    /*@GET()
-    @Path("/saveRecord")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String saveRecord() {
-        System.out.println(this.stream.state());
-        //stream.
-        return "[]";
-    }*/
-
 
     @GET()
     @Path("/getState")

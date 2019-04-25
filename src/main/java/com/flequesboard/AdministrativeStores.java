@@ -5,7 +5,8 @@ enum AdministrativeStores {
     ENOSE_IDS("enose_IDS"),
     ENOSE_SESIONS("enose_sessions_"),
     KEY_SEP("__sep__"),
-    SESSION_RECORDS("enose_session_records_");
+    SESSION_RECORDS("enose_session_records_"),
+    DEFAULT_ORG("ru.vsuet.noses");
     String value;
     AdministrativeStores(String value){
         this.value = value;

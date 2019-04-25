@@ -4,6 +4,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("serial")
 public class SaveNose extends HttpServlet {
@@ -20,17 +23,40 @@ public class SaveNose extends HttpServlet {
         try {
 
             final String noseID = request.getParameter("noseID");
+            String org = "";//request.getHeader("org");
+            if(!org.isEmpty()){ //can save nose on behalf of an organisation
+                this.organisation = org;
+            }
 
-            System.out.println(noseID);
+            String res = "failed max";
+            if(noseID.isEmpty()){
+                output = "{\"status\":" + res +"}";
+                response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
+                return;
+            }
 
-            String res = this.redisSink.sinkNose(noseID,this.organisation) > 0 ? "success" : "exists";
+            Map<String, String> nose = new HashMap<>();
+            Enumeration<String> keys = request.getParameterNames();
+
+            while(keys.hasMoreElements()){
+                String key = keys.nextElement();
+                nose.put(key, request.getParameter(key));
+            }
+
+            if(nose.keySet().isEmpty()){ //sink using provided ID only
+                res = this.redisSink.sinkNose(noseID,this.organisation);
+            }else{
+                //much appreciated sink point
+                res = this.redisSink.sinkNose(nose, this.organisation);
+            }
+
             output = "{\"status\":" + res +"}";
 
             response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (Exception ex) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
+            System.out.println(ex);
         } finally {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(output);

@@ -16,10 +16,9 @@
         <kafka.version>1.0.1</kafka.version>
         <slf4j.version>1.7.7</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
-        <jetty.version>9.3.24.v20180605</jetty.version>
+        <jetty.version>[9.3.27.v20190418,)</jetty.version>
         <jersey.version>2.19</jersey.version>
         <lettuce.version>3.2.Final</lettuce.version>
-        <mongo.version>3.10.1</mongo.version>
     </properties>
 
     <repositories>
@@ -81,11 +80,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>${mongo.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>

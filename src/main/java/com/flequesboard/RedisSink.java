@@ -1,11 +1,14 @@
 package com.flequesboard;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.RedisURI;
 
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Type;
+import java.util.*;
 
 
 class RedisSink {
@@ -17,14 +20,33 @@ class RedisSink {
     }
 
 
-    Long sinkNose(String noseID, String owner){
+    String sinkNose(String noseID, String owner){
+        Map<String, String> nose = new HashMap<>();
+        nose.put("noseID", noseID.hashCode() + "");
+        nose.put("title", noseID);
+        nose.put("short_description", "");
+        nose.put("date_reg", new Date().getTime()+"");
+        nose.put("org", owner);
+
+        return this.sinkNose(nose, owner);
+    }
+    String sinkNose(Map<String, String> nose, String owner){
+        String status;
+        String nose_id = nose.getOrDefault("noseID", nose.hashCode() + "");
+
         RedisConnection<String, String> connection = redisClient.connect();
 
-        //save the reg_noses => [noseID ]
-        Long insert = connection.sadd(getNoseCollectionKey(owner), noseID);
+        String set_key = getNoseCollectionKey(owner);
 
+        Gson gson = new GsonBuilder().create();
+        String json_nose = gson.toJson(nose);
+
+        Map<String, String> nose_entry = new HashMap<>();
+        nose_entry.put(nose_id, json_nose);
+
+        status = connection.hmset(set_key,nose_entry );
         connection.close();
-        return insert;
+        return status;
     }
 
     String sinkNoseRecord(NoseRecord noseRecord){
@@ -52,13 +74,20 @@ class RedisSink {
 
     String getNoseKeys(String owner, boolean csv){
         RedisConnection<String, String> connection = redisClient.connect();
-        Set<String> set = connection.smembers(getNoseCollectionKey(owner));
+        Map<String, String> set = connection.hgetall(getNoseCollectionKey(owner));
         connection.close();
 
-        if (csv)
-            return "noseID\n" + new StreamCSV(set).getCSV();
+        Gson gson = new GsonBuilder().create();
+        List<Map<String,String>> noses = new ArrayList<>();
+        Type typeOfHashMap = new TypeToken<Map<String, String>>() { }.getType();
 
-        return new StreamJSON(set).getJson();
+        for (String s: set.keySet()) {
+            Map<String, String> nose = gson.fromJson(set.get(s), typeOfHashMap);
+            noses.add(nose);
+        }
+
+
+        return gson.toJson(noses); //new StreamJSON(set).getJson();
     }
 
 
