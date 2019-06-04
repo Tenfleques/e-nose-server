@@ -1,4 +1,4 @@
-package com.flequesboard;
+package com.flequesboard.redis;
 
 import java.time.Instant;
 import java.util.HashMap;

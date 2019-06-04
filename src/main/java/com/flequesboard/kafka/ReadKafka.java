@@ -1,4 +1,4 @@
-package com.flequesboard;
+package com.flequesboard.kafka;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-class ReadKafka {
-    static Map<String, List<PartitionInfo>> readKafka(String broker, String topic){
+public class ReadKafka {
+    public static Map<String, List<PartitionInfo>> readKafka(String broker, String topic){
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");

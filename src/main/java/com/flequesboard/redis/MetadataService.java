@@ -1,4 +1,5 @@
-package com.flequesboard;
+package com.flequesboard.redis;
+import com.flequesboard.kafka.HostStoreInfo;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.StreamsMetadata;

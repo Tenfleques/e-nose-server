@@ -1,4 +1,7 @@
-package com.flequesboard;
+package com.flequesboard.nose;
+
+import com.flequesboard.redis.AdministrativeStores;
+import com.google.gson.Gson;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,14 +11,20 @@ import java.util.Map;
 /*
  * formats the data structure of the nose for redis storage
  */
-class NoseRecord {
+public class NoseRecord {
 
     private Map<String, String> sensors;
     private String noseID;
     private String sessionID;
     private String date;
 
-    NoseRecord(String rec){
+    public NoseRecord(){
+        noseID = "";
+        sessionID = "";
+        date ="";
+        sensors = new HashMap<>();
+    }
+    public NoseRecord(String rec){
         List<String> ss = Arrays.asList(rec.split(","));
 
         this.noseID = ss.get(ss.indexOf("_id")+1);
@@ -30,6 +39,7 @@ class NoseRecord {
         //number of sensors can scale horizontally
         sensors = timeSensorRecord(ss.subList(startOfSensors + 1,ss.size()));
     }
+
     private Map<String, String> timeSensorRecord(List<String> sensors){
         Map<String, String> timeSensorPair = new HashMap<>();
         for(int i = 1; i < sensors.size(); i += 2) {
@@ -37,17 +47,23 @@ class NoseRecord {
         }
         return timeSensorPair;
     }
-
-    String getNoseID() {
+    public String getDate(){
+        return this.date;
+    }
+    public String getNoseID() {
         return noseID;
     }
-
-    String getSessionID() {
+    public String getSession() {
         return sessionID;
     }
+    public Map<String, String> getSensors() {
+        return sensors;
+    }
 
-    Map<String, String> getRedisReadyRecord(){
-        return  this.sensors;
+    @Override
+    public String toString(){
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 
 }

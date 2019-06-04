@@ -1,9 +1,12 @@
-package com.flequesboard;
+package com.flequesboard.serviceAPI;
+
+import com.flequesboard.kafka.StreamKafka;
+import com.flequesboard.redis.RedisSink;
 
 import java.util.concurrent.CountDownLatch;
 
-class NoseServer {
-    NoseServer(String brokers, String topic, String rpcEndpoint, Integer
+public class NoseServer {
+    public NoseServer(String brokers, String topic, String rpcEndpoint, Integer
             rpcPort, String redishost, int redisport) throws Exception {
 
         RedisSink redisSink = new RedisSink(redishost, redisport);
@@ -47,26 +50,10 @@ class NoseServer {
 
         //info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/instances\n");
 
-        info.append("\n\t POST \n");
-        info.append("\t   http://").append(rpcEndpoint).append(":").append(rpcPort).append("/register/\n");
-
-        info.append("{\n\t\"noseID\": noseID, \n\t \"groupID\" : groupID\n}\n");
-
-        info.append("\n\t GET \n");
-
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/noses\n");
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append("/csv/noses\n");
-
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/sessions/{nose_id}\n");
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/csv/sessions/{nose_id}\n");
-
-
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/session/{nose_id}/{session_id}\n");
-        info.append("*\t     http://").append(rpcEndpoint).append(":").append(rpcPort).append
-                ("/csv/session/{nose_id}/{session_id}\n");
+        info.append("\n\t POST, GET \n");
+        info.append("\t   http://").append(rpcEndpoint).append(":").append(rpcPort).append("/noses\n");
+        info.append("\t   http://").append(rpcEndpoint).append(":").append(rpcPort).append("/sessions\n");
+        info.append("\t   http://").append(rpcEndpoint).append(":").append(rpcPort).append("/records\n");
 
 
         System.out.print(info);

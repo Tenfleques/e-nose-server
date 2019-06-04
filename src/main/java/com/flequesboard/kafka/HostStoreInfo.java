@@ -1,4 +1,7 @@
-package com.flequesboard;
+package com.flequesboard.kafka;
+import com.flequesboard.serviceAPI.RPCService;
+import com.flequesboard.redis.AdministrativeStores;
+
 import java.util.Objects;
 import java.util.Set;
 /**

@@ -1,4 +1,4 @@
-package com.flequesboard;
+package com.flequesboard.exceptions;
 
 public class KeyNotFoundException extends Exception {
     public KeyNotFoundException(String message) {
