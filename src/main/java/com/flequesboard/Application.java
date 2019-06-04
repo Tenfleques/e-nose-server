@@ -1,4 +1,7 @@
 package com.flequesboard;
+import com.flequesboard.exceptions.KeyNotFoundException;
+import com.flequesboard.kafka.ReadKafka;
+import com.flequesboard.serviceAPI.NoseServer;
 import org.apache.kafka.common.PartitionInfo;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -72,16 +75,16 @@ public class Application {
                     NoseServer noseServer = new NoseServer(BROKERS.toString(), TOPIC, ENDPOINT, ENDPOINT_PORT, REDIS_URL, REDIS_PORT);
                     //}
                 } catch (Exception e ) {
-                    if (numTries == 0) {
+                    //if (numTries == 0) {
                         System.out.print(e.getMessage());
                         try {
                             throw e;
                         } catch (Exception e1) {
                             e1.printStackTrace();
                         }
-                    }else{
+                    /*}else{
                         System.out.println("an error occurred, reattempting " + (allTries - numTries));
-                    }
+                    }*/
                 }
                 numTries--;
             }

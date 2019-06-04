@@ -1,5 +1,7 @@
-package com.flequesboard;
+package com.flequesboard.kafka;
 
+import com.flequesboard.nose.NoseRecord;
+import com.flequesboard.redis.RedisSink;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -17,9 +19,9 @@ import java.util.Properties;
 * streams kafka records of a given nose id, commit well structured form into redis.
 * */
 
-class StreamKafka {
+public class StreamKafka {
     private final KafkaStreams stream;
-    StreamKafka(String brokers, String topic, RedisSink redisSink) throws Exception {
+    public StreamKafka(String brokers, String topic, RedisSink redisSink) throws Exception {
 
         final Properties props;
         props  = new Properties();
@@ -42,7 +44,7 @@ class StreamKafka {
         //KStream<String,NoseRecord> noseRecords =
         source.mapValues(a -> {
             NoseRecord noseRecord = new NoseRecord(a);
-            redisSink.sinkNoseRecord(noseRecord);
+            redisSink.sinkNoseRecord(noseRecord, topic);
             return  noseRecord;
         });
 
@@ -51,11 +53,11 @@ class StreamKafka {
         final Topology topology = builder.build();
         stream = new KafkaStreams(topology, props);
     }
-    void startStream(){
+    public void startStream(){
         this.stream.cleanUp();
         this.stream.start();
     }
-    KafkaStreams getStream(){
+    public KafkaStreams getStream(){
         return stream;
     }
 
