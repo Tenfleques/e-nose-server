@@ -2,12 +2,14 @@ package com.flequesboard.handlersAPI;
 
 import com.flequesboard.redis.RedisSink;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,27 +25,29 @@ public class NoseSessionsAPI extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String output = "{\"status\": \"fail\"}";
-        Map<String, String> sessionRecord = new HashMap<>();
-        String org = this.organisation;
         try {
-
-            Gson gson = new Gson();
-
-            StringBuilder jb = new StringBuilder();
+            String org, res;
+            StringBuffer jb = new StringBuffer();
             String line;
             try {
                 BufferedReader reader = request.getReader();
+                Gson gson = new Gson();
+                String [] keys = {"short_description",
+                        "sessionTitle",
+                        "noseID",
+                        "sessionID"};
+
+                Map<String, String> session = new HashMap<>();
+
                 while ((line = reader.readLine()) != null)
                     jb.append(line);
 
                 if(jb.toString().isEmpty()){
-                    Enumeration<String> keys = request.getParameterNames();
-                    while(keys.hasMoreElements()){
-                        String key = keys.nextElement();
-                        sessionRecord.put(key, request.getParameter(key));
+                    for (String i: keys) {
+                        session.put(i,request.getParameter(i));
                     }
                 }else{
-                    sessionRecord = gson.fromJson(jb.toString(), Map.class);
+                    session = gson.fromJson(jb.toString(), new TypeToken<Map<String, String>>(){}.getType());
                 }
 
                 try{
@@ -51,12 +55,18 @@ public class NoseSessionsAPI extends HttpServlet {
                 }catch (NullPointerException e) {
                     org = this.organisation;
                 }
+                if(session.keySet().containsAll(Arrays.asList(keys))){
+                    res = this.redisSink.sinkNoseSession(session, org);
+                }else {
+                    res = "missing key";
+                }
+                output = "{\"status\":\"" + res +"\"}";
 
             } catch (Exception e) {
-                System.out.println("error " + e.getMessage());
+                System.out.println("error " + e);
             }
-            String res = this.redisSink.sinkNoseSession(sessionRecord, org);
-            output = "{\"status\":\"" + res +"\"}";
+
+            response.setStatus(HttpServletResponse.SC_OK);
 
 
         } catch (Exception ex) {

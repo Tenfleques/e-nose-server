@@ -3,14 +3,17 @@ package com.flequesboard.handlersAPI;
 import com.flequesboard.nose.NoseRecord;
 import com.flequesboard.redis.RedisSink;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NoseRecordsAPI extends HttpServlet {
     private RedisSink redisSink;
@@ -22,82 +25,53 @@ public class NoseRecordsAPI extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        String output = "{\"status\": \"fail\"}", res;
+        String output = "{\"status\": \"fail\"}";
         try {
-            Enumeration<String> param_names = request.getParameterNames();
-            boolean has_nose_stream = false;
-            String org;
-
-            while(param_names.hasMoreElements()){
-                if(param_names.nextElement().equals("nose_stream")){
-                    has_nose_stream = true;
-                    break;
-                }
-            }
-
-            if(!has_nose_stream){ // then it's sent as json
+            String org, res;
+            StringBuffer jb = new StringBuffer();
+            String line;
+            try {
+                BufferedReader reader = request.getReader();
                 Gson gson = new Gson();
+                String [] keys = {"sessionID",
+                        "date",
+                        "noseID",
+                        "sensors"};
 
-                StringBuffer jb = new StringBuffer();
-                String line;
-                try {
-                    NoseRecord noseRecord;
-                    BufferedReader reader = request.getReader();
-                    while ((line = reader.readLine()) != null)
-                        jb.append(line);
+                NoseRecord noseRecord;
+
+                while ((line = reader.readLine()) != null)
+                    jb.append(line);
 
 
-                    if(jb.toString().isEmpty()){
-                        StringBuilder noseMap = new StringBuilder();
-
-                        noseMap.append("{");
-                        Enumeration<String> keys = request.getParameterNames();
-                        int i = 0;
-                        while(keys.hasMoreElements()){
-                            String key = keys.nextElement();
-                            if(i > 0)
-                                noseMap.append(",");
-                            noseMap.append("\"").append(key).append("\": ");
-
-                            String val = request.getParameter(key);
-                            if(val.contains("{")){ //it's an object stringified
-                                noseMap.append(val);
-                            }else{
-                                noseMap.append("\"").append(val).append("\"");
-                            }
-
-                            ++i;
-                        }
-                        noseMap.append("}");
-                        noseRecord = gson.fromJson(noseMap.toString(), NoseRecord.class);
-
-                    }else {
-                        noseRecord = gson.fromJson(jb.toString(), NoseRecord.class);
+                if(jb.toString().isEmpty()){
+                    Map<String, String> kv = new HashMap<>();
+                    for (String i: keys) {
+                        kv.put(i, request.getParameter(i));
                     }
-
-                    try{
-                        org = request.getHeader("org");
-                    }catch (NullPointerException e) {
-                        org = this.organisation;
-                    }
-                    res = this.redisSink.sinkNoseRecord(noseRecord, org);
-                    output = "{\"status\":\"" + res +"\"}";
-
-                } catch (Exception e) {
-                    System.out.println("error " + e.getMessage());
-                }
-
-            }else{
-                String nose_stream = request.getParameter("nose_stream");
-                org = request.getHeader("org");
-                if(org.equals(this.organisation)) {
-                    res = this.redisSink.sinkNoseRecord(new NoseRecord(nose_stream), this.organisation);
-                    output = "{\"status\":\"" + res +"\"}";
+                    noseRecord = new NoseRecord(kv);
                 }else{
-                    output = "{\"status\": \"fail\", \"reason\": \"wrong organisation\"}";
+                    noseRecord = gson.fromJson(jb.toString(), NoseRecord.class);
                 }
-                System.out.println(org);
+
+                try{
+                    org = request.getHeader("org");
+                }catch (NullPointerException e) {
+                    org = this.organisation;
+                }
+                if(!noseRecord.isEmpty()){
+                    res = this.redisSink.sinkNoseRecord(noseRecord, org);
+                }else {
+                    res = "missing key";
+                }
+                output = "{\"status\":\"" + res +"\"}";
+
+
+            } catch (Exception e) {
+                System.out.println("error " + e);
             }
+
+            response.setStatus(HttpServletResponse.SC_OK);
 
 
         } catch (Exception ex) {
@@ -120,21 +94,20 @@ public class NoseRecordsAPI extends HttpServlet {
             StringBuffer jb = new StringBuffer();
             String line;
             try {
-                Map<String, NoseRecord> noseRecordMap = new HashMap<>();
+                List<NoseRecord> noseRecordList;
 
                 BufferedReader reader = request.getReader();
                 while ((line = reader.readLine()) != null)
                     jb.append(line);
 
-                Map<String, String> req_body = gson.fromJson(jb.toString(), Map.class);
-
-                String raw_json = req_body.getOrDefault("matrix","{}");
-
-                if(raw_json.isEmpty()){
+                String raw_json;
+                if(jb.toString().isEmpty()){
                     raw_json = request.getParameter("matrix");
+                }else{
+                    raw_json = jb.toString();
                 }
 
-                noseRecordMap = gson.fromJson(raw_json, Map.class);
+                noseRecordList = gson.fromJson(raw_json, new TypeToken<List<NoseRecord>>(){}.getType());
 
                 try{
                     org = request.getHeader("org");
@@ -142,12 +115,15 @@ public class NoseRecordsAPI extends HttpServlet {
                     org = this.organisation;
                 }
 
-                //System.out.println(noseRecordMap);
-                res = this.redisSink.sinkNoseRecord(noseRecordMap, org);
-                //output = "{\"status\":\"" + res +"\"}";
+                if(!noseRecordList.isEmpty()) {
+                    res = this.redisSink.sinkNoseRecord(noseRecordList, org);
+                }else {
+                    res = "missing key";
+                }
+                output = "{\"status\":\"" + res + "\"}";
 
             } catch (Exception e) {
-                System.out.println("error " + e.getMessage());
+                System.out.println("error " + e);
             }
 
         } catch (Exception ex) {

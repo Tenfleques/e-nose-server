@@ -1,14 +1,16 @@
 package com.flequesboard.handlersAPI;
 
+import com.flequesboard.nose.NoseRecord;
 import com.flequesboard.redis.RedisSink;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class NoseDeviceAPI extends HttpServlet {
@@ -23,36 +25,46 @@ public class NoseDeviceAPI extends HttpServlet {
             throws IOException {
         String output = "{\"status\": \"fail\"}";
         try {
+            String org, res;
+            StringBuffer jb = new StringBuffer();
+            String line;
+            try {
+                BufferedReader reader = request.getReader();
+                Gson gson = new Gson();
+                String [] keys = {"short_description",
+                        "date_reg",
+                        "noseID",
+                        "title"};
 
-            final String noseID = request.getParameter("noseID");
-            String org = request.getHeader("org");
-            if(!org.isEmpty()){ //can save nose on behalf of an organisation
-                this.organisation = org;
-            }
+                Map<String, String> nose = new HashMap<>();
 
-            String res = "failed max";
-            if(noseID.isEmpty()){
+                while ((line = reader.readLine()) != null)
+                    jb.append(line);
+
+                if(jb.toString().isEmpty()){
+                    for (String i: keys) {
+                        nose.put(i,request.getParameter(i));
+                    }
+                }else{
+                    nose = gson.fromJson(jb.toString(), new TypeToken<Map<String, String>>(){}.getType());
+                }
+
+                try{
+                    org = request.getHeader("org");
+                }catch (NullPointerException e) {
+                    org = this.organisation;
+                }
+                if(nose.keySet().containsAll(Arrays.asList(keys))){
+                    res = this.redisSink.sinkNose(nose, org);
+                }else {
+                    res = "missing key";
+                }
                 output = "{\"status\":\"" + res +"\"}";
-                response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-                return;
+
+
+            } catch (Exception e) {
+                System.out.println("error " + e);
             }
-
-            Map<String, String> nose = new HashMap<>();
-            Enumeration<String> keys = request.getParameterNames();
-
-            while(keys.hasMoreElements()){
-                String key = keys.nextElement();
-                nose.put(key, request.getParameter(key));
-            }
-
-            if(nose.keySet().isEmpty()){ //sink using provided ID only
-                res = this.redisSink.sinkNose(noseID,this.organisation);
-            }else{
-                //much appreciated sink point
-                res = this.redisSink.sinkNose(nose, this.organisation);
-            }
-
-            output = "{\"status\":\"" + res +"\"}";
 
             response.setStatus(HttpServletResponse.SC_OK);
 

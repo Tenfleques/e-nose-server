@@ -15,7 +15,6 @@ import java.util.*;
 
 public class RedisSink {
     private RedisClient redisClient;
-    private Map<String, String> activeSessions;
     private String getNoseReadingCollectionKey(String ownerID, String noseID, String sessionID){
         return ownerID + "_" + AdministrativeStores.SESSION_RECORDS_KEY.getValue() + "_" +  noseID + "_" + sessionID;
     }
@@ -31,16 +30,16 @@ public class RedisSink {
         this.redisClient = new RedisClient(
                 RedisURI.create("redis://"+redishost+":"+redisport));
     }
-    public String sinkNose(String noseID, String owner){
-        Map<String, String> nose = new HashMap<>();
-        nose.put("noseID", noseID.hashCode() + "");
-        nose.put("title", noseID);
-        nose.put("short_description", "");
-        nose.put("date_reg", new Date().getTime()+"");
-        nose.put("org", owner);
-
-        return this.sinkNose(nose, owner);
-    }
+//    public String sinkNose(String noseID, String owner){
+//        Map<String, String> nose = new HashMap<>();
+//        nose.put("noseID", noseID.hashCode() + "");
+//        nose.put("title", noseID);
+//        nose.put("short_description", "");
+//        nose.put("date_reg", new Date().getTime()+"");
+//        nose.put("org", owner);
+//
+//        return this.sinkNose(nose, owner);
+//    }
     public String sinkNose(Map<String, String> nose, String owner){
         String status = "";
 
@@ -69,8 +68,6 @@ public class RedisSink {
     public String sinkNoseSession(Map<String, String> noseSession, String owner){
         String status = "fail";
         try{
-            System.out.println(noseSession);
-
             String id = noseSession.get("noseID");
             String session_key = this.getSessionsCollectionKey(owner, id);
 
@@ -115,26 +112,27 @@ public class RedisSink {
 
         return status;
     }
-    public String sinkNoseRecord(Map<String, NoseRecord> noseRecords, String owner){
+    public String sinkNoseRecord(List<NoseRecord> noseRecords, String owner){
         String status = "";
         try{
             RedisConnection<String, String> connection = redisClient.connect();
-            String sessionID;
-            /*noseRecords.forEach();
+            if(noseRecords.isEmpty()) {
+                status = "empty list";
+                return status;
+            }
+            NoseRecord zeroth = noseRecords.get(0);
+            String session_key = getNoseReadingCollectionKey(owner, zeroth.getNoseID(), zeroth.getSession());
+            Gson gson = new Gson();
 
-            String id = noseRecord.getNoseID();
-
-            String session_key = this.getNoseReadingCollectionKey(owner, id, noseRecord.getSession());
-
-            Gson gson = new GsonBuilder().create();
-            String json_session = gson.toJson(noseRecord);
-
-            Map<String, String> nose_record = new HashMap<>();
-            nose_record.put(noseRecord.getDate(), json_session);
-
-            status = connection.hmset(session_key, nose_record);*/
+            noseRecords.forEach(noseRecord -> {
+                String json_session = gson.toJson(noseRecord);
+                Map<String, String> nose_record = new HashMap<>();
+                nose_record.put(noseRecord.getDate(), json_session);
+                connection.hmset(session_key, nose_record);
+            });
 
             connection.close();
+            status = "ok";
 
         }catch(NullPointerException e){
             System.out.println(e.getMessage() + 101 + " redissink.java");
